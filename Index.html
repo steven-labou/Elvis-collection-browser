@@ -2,218 +2,580 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<!-- iPhone App Mode -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Elvis Browser">
-
-<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/8/8e/Elvis_Presley_1968.jpg">
-
 <title>Elvis Collection Browser</title>
-
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Arial;
-  background: #f2f2f7;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* HEADER */
-.header {
-  background: linear-gradient(to bottom, #000, #1c1c1e);
-  color: white;
-  padding: 25px 20px;
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
-}
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: #f2f2f7;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
 
-/* STATS */
-.stats {
-  display: flex;
-  gap: 10px;
-  padding: 15px;
-}
+  /* HERO HEADER */
+  .hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: #111;
+  }
+  .hero-imgs {
+    display: flex;
+    height: 100%;
+  }
+  .hero-img {
+    flex: 1;
+    object-fit: cover;
+    object-position: center top;
+    filter: brightness(0.45);
+    min-width: 0;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.05) 100%);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.13);
+    border: 1px solid rgba(255,255,255,0.22);
+    color: #f5d060;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    width: fit-content;
+  }
+  .hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .hero-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+  }
 
-.stat {
-  flex: 1;
-  background: white;
-  border-radius: 15px;
-  padding: 12px;
-  text-align: center;
-}
+  /* STATS */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 16px;
+  }
+  .stat {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 10px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .stat-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
 
-/* TABS */
-.tabs {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  overflow-x: auto;
-}
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tabs button:hover { background: #f0f0f0; }
+  .tabs button.active { background: #111; color: #fff; border-color: #111; }
 
-.tabs button {
-  padding: 10px;
-  border-radius: 20px;
-  border: none;
-}
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    align-items: center;
+  }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .tbtn {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .tbtn:hover { background: #f0f0f0; }
+  .tbtn.shuffle { background: #111; color: #fff; border-color: #111; }
+  .tbtn.shuffle:hover { background: #333; }
+  .tbtn.save-btn { background: #e8f5ee; color: #1a5c35; border-color: #a8d5bc; }
+  .tbtn.load-btn { background: #fff8e8; color: #7a5010; border-color: #f0d080; }
 
-.active { background: black; color: white; }
+  /* SAVE/LOAD PANEL */
+  .panel {
+    display: none;
+    margin: 0 16px 14px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .panel.open { display: block; }
+  .panel h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .panel p { font-size: 12px; color: #888; margin-bottom: 10px; }
+  .panel textarea {
+    width: 100%;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1.5px solid #e0e0e0;
+    background: #f9f9f9;
+    color: #111;
+    resize: vertical;
+    min-height: 56px;
+  }
+  .panel-btns { display: flex; gap: 8px; margin-top: 10px; }
 
-/* CONTROLS */
-.controls {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  overflow-x: auto;
-}
+  /* SECTION HEADER */
+  .sec-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px 12px;
+  }
+  .sec-icon { font-size: 18px; }
+  .sec-title { font-size: 16px; font-weight: 600; color: #111; }
+  .sec-count { font-size: 13px; color: #888; margin-left: auto; }
 
-/* CARDS */
-.grid { padding: 15px; }
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 0 16px 30px;
+  }
 
-.card {
-  background: white;
-  border-radius: 20px;
-  margin-bottom: 15px;
-  overflow: hidden;
-}
+  /* CARD */
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:active { transform: scale(0.98); }
+  .card-img-wrap {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background: #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 52px;
+  }
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-body { padding: 12px; }
+  .card-name { font-size: 13px; font-weight: 600; color: #111; line-height: 1.3; margin-bottom: 3px; }
+  .card-meta { font-size: 11px; color: #888; margin-bottom: 8px; }
 
-.card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
+  /* BADGES */
+  .badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .badge { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .b-grail  { background: #111; color: #f5d060; }
+  .b-rare   { background: #fce8e3; color: #8b2a1a; }
+  .b-limited{ background: #fff3e0; color: #7a4a0a; }
+  .b-uncommon{ background: #eef0fc; color: #2a3f8a; }
+  .b-common { background: #e8f5ee; color: #1a5c35; }
+  .b-owned  { background: #e8f5ee; color: #1a5c35; border: 1px solid #a8d5bc; }
+  .b-wish   { background: #fff3e0; color: #7a4a0a; border: 1px solid #f0c070; }
 
-.card-content { padding: 10px; }
+  /* ACTION BUTTONS */
+  .acts { display: flex; gap: 5px; flex-wrap: wrap; }
+  .abtn {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 11px;
+    border-radius: 8px;
+    border: 1.5px solid #ddd;
+    background: #f9f9f9;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .abtn:hover { background: #ebebeb; }
+  .a-own  { background: #e8f5ee; color: #1a5c35; border-color: #a8d5bc; }
+  .a-own:hover { background: #c8e8d8; }
+  .a-wish { background: #fff3e0; color: #7a4a0a; border-color: #f0c070; }
+  .a-wish:hover { background: #fde8b8; }
+  .a-hide { background: #f5f5f5; color: #999; border-color: #e0e0e0; }
+  .a-rem  { background: #fce8e3; color: #8b2a1a; border-color: #e8a898; }
+  .a-rem:hover { background: #f8d0c8; }
 
-.actions {
-  display: flex;
-  gap: 5px;
-  margin-top: 10px;
-}
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #aaa;
+    display: none;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; font-weight: 500; color: #888; }
 
-.actions button {
-  flex: 1;
-  border: none;
-  border-radius: 10px;
-  padding: 8px;
-}
+  /* TOAST */
+  .toast-wrap { text-align: center; padding: 10px 0 20px; }
+  .toast {
+    display: inline-block;
+    background: #111;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 380px) {
+    .grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 22px; }
+  }
 </style>
 </head>
-
 <body>
 
-<div class="header">
-  <div>THE KING OF ROCK N ROLL</div>
-  <h1>Elvis Collection Browser</h1>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-imgs">
+    <img class="hero-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/480px-24_Portrait_of_Elvis_Presley.jpg" onerror="this.style.display='none'" alt="Elvis">
+    <img class="hero-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Elvis_Presley_promoting_Jailhouse_Rock.jpg/440px-Elvis_Presley_promoting_Jailhouse_Rock.jpg" onerror="this.style.display='none'" alt="Elvis">
+    <img class="hero-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Elvis_Presley_1970.jpg/440px-Elvis_Presley_1970.jpg" onerror="this.style.display='none'" alt="Elvis">
+  </div>
+  <div class="hero-overlay">
+    <div class="hero-badge">THE KING OF ROCK N ROLL</div>
+    <div class="hero-title">Elvis Collection Browser</div>
+    <div class="hero-sub">Sir's personal collector dashboard</div>
+  </div>
 </div>
 
+<!-- STATS -->
 <div class="stats">
-  <div class="stat"><span id="available"></span><br>Available</div>
-  <div class="stat"><span id="ownedCount"></span><br>Owned</div>
-  <div class="stat"><span id="wishlistCount"></span><br>Wishlist</div>
-  <div class="stat"><span id="hiddenCount"></span><br>Hidden</div>
+  <div class="stat"><div class="stat-val" id="s-avail">0</div><div class="stat-lbl">Available</div></div>
+  <div class="stat"><div class="stat-val" id="s-owned">0</div><div class="stat-lbl">Owned</div></div>
+  <div class="stat"><div class="stat-val" id="s-wish">0</div><div class="stat-lbl">Wishlist</div></div>
+  <div class="stat"><div class="stat-val" id="s-hidden">0</div><div class="stat-lbl">Hidden</div></div>
 </div>
 
+<!-- TABS -->
 <div class="tabs">
-  <button onclick="setFilter('all')">All</button>
-  <button onclick="setFilter('figure')">Figures</button>
-  <button onclick="setFilter('owned')">Owned</button>
-  <button onclick="setFilter('wishlist')">Wishlist</button>
+  <button class="active" onclick="setTab(this,'all')">Browse All</button>
+  <button onclick="setTab(this,'figure')">Figures</button>
+  <button onclick="setTab(this,'comeback')">Comeback Special</button>
+  <button onclick="setTab(this,'rare')">Rare & Grail</button>
+  <button onclick="setTab(this,'misc')">Misc</button>
+  <button onclick="setTab(this,'owned')">My Collection</button>
+  <button onclick="setTab(this,'wishlist')">Wishlist</button>
+  <button onclick="setTab(this,'hidden')">Hidden</button>
 </div>
 
-<div class="controls">
-  <button onclick="shuffle()">🔀 Shuffle</button>
-  <button onclick="sortAZ()">A–Z</button>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button class="tbtn shuffle" onclick="doShuffle()">🔀 Shuffle</button>
+  <button class="tbtn" onclick="doSort('name')">A–Z</button>
+  <button class="tbtn" onclick="doSort('rarity')">Rarity</button>
+  <button class="tbtn" onclick="doSort('era')">Era</button>
+  <button class="tbtn save-btn" onclick="openSave()">💾 Save</button>
+  <button class="tbtn load-btn" onclick="openLoad()">📂 Load</button>
 </div>
 
+<!-- SAVE PANEL -->
+<div class="panel" id="save-panel">
+  <h3>Save your collection</h3>
+  <p>Copy this code and keep it safe — paste it back anytime to restore everything.</p>
+  <textarea id="save-box" readonly onclick="this.select()"></textarea>
+  <div class="panel-btns">
+    <button class="tbtn save-btn" onclick="doCopy()">Copy code</button>
+    <button class="tbtn" onclick="closePanels()">Close</button>
+  </div>
+</div>
+
+<!-- LOAD PANEL -->
+<div class="panel" id="load-panel">
+  <h3>Load your collection</h3>
+  <p>Paste your save code below and tap Load.</p>
+  <textarea id="load-box" placeholder="Paste your save code here..."></textarea>
+  <div class="panel-btns">
+    <button class="tbtn load-btn" onclick="doLoad()">Load</button>
+    <button class="tbtn" onclick="closePanels()">Cancel</button>
+  </div>
+</div>
+
+<!-- SECTION HEADER -->
+<div class="sec-hdr">
+  <span class="sec-icon" id="sec-icon">🎤</span>
+  <span class="sec-title" id="sec-title">All Collectibles</span>
+  <span class="sec-count" id="sec-count"></span>
+</div>
+
+<!-- GRID -->
 <div class="grid" id="grid"></div>
+<div class="empty" id="empty">
+  <div class="empty-icon">🎵</div>
+  <div class="empty-text">Nothing to show here, Sir.</div>
+</div>
+<div class="toast-wrap"><span class="toast" id="toast"></span></div>
 
 <script>
-let items = [
-{
-name:"Elvis Las Vegas Figure",
-type:"figure",
-era:"1970",
-price:"$35–$90",
-img:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Elvis_Presley_1970.jpg"
-},
-{
-name:"Elvis Jailhouse Rock Figure",
-type:"figure",
-era:"1957",
-price:"$60–$150",
-img:"https://upload.wikimedia.org/wikipedia/commons/1/1c/Elvis_Presley_Jailhouse_Rock.jpg"
-},
-{
-name:"Elvis Comeback Special Figure",
-type:"figure",
-era:"1968",
-price:"$40–$120",
-img:"https://upload.wikimedia.org/wikipedia/commons/8/8e/Elvis_Presley_1968.jpg"
-}
+const ITEMS = [
+  { name:"McFarlane Elvis — '68 Comeback Special", type:"figure", cat:"comeback", era:"1968", rarity:"Rare", price:"$80–$200",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg/400px-Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg", fb:"🎸" },
+  { name:"McFarlane Elvis — Aloha From Hawaii", type:"figure", cat:"figure", era:"1973", rarity:"Limited", price:"$90–$250",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_aloha.jpg/400px-Elvis_aloha.jpg", fb:"🌺" },
+  { name:"McFarlane Elvis — Jailhouse Rock", type:"figure", cat:"figure", era:"1957", rarity:"Common", price:"$40–$100",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Elvis_Presley_promoting_Jailhouse_Rock.jpg/400px-Elvis_Presley_promoting_Jailhouse_Rock.jpg", fb:"🎤" },
+  { name:"McFarlane Elvis — Las Vegas '72", type:"figure", cat:"figure", era:"1972", rarity:"Uncommon", price:"$60–$150",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Elvis_Presley_1970.jpg/400px-Elvis_Presley_1970.jpg", fb:"👑" },
+  { name:"McFarlane Elvis — Viva Las Vegas", type:"figure", cat:"figure", era:"1964", rarity:"Common", price:"$35–$90",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/400px-24_Portrait_of_Elvis_Presley.jpg", fb:"🎰" },
+  { name:"'68 Comeback Special Poster — Original Promo", type:"poster", cat:"comeback", era:"1968", rarity:"Rare", price:"$150–$400",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg/400px-Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg", fb:"📺" },
+  { name:"Black Leather Jacket — '68 Replica", type:"costume", cat:"comeback", era:"1968", rarity:"Limited", price:"$200–$500",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg/400px-Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg", fb:"🧥" },
+  { name:"NBC '68 Special Program Book", type:"program", cat:"comeback", era:"1968", rarity:"Rare", price:"$80–$200",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg/400px-Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg", fb:"📖" },
+  { name:"Elvis '68 Special Vinyl LP", type:"vinyl", cat:"comeback", era:"1968", rarity:"Uncommon", price:"$30–$80",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg/400px-Elvis_Presley_1968_TV_Special_leather_suit_at_Graceland.jpg", fb:"💿" },
+  { name:"Elvis Presley EPE Gold Record Award", type:"award", cat:"rare", era:"1950s–70s", rarity:"Grail", price:"$500–$2000",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/400px-24_Portrait_of_Elvis_Presley.jpg", fb:"🏆" },
+  { name:"Elvis Signed Photo — Las Vegas Era", type:"autograph", cat:"rare", era:"1970s", rarity:"Grail", price:"$1000+",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Elvis_Presley_1970.jpg/400px-Elvis_Presley_1970.jpg", fb:"✍️" },
+  { name:"Elvis TCB Necklace Replica", type:"jewelry", cat:"rare", era:"1970s", rarity:"Limited", price:"$50–$150",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Elvis_Presley_1970.jpg/400px-Elvis_Presley_1970.jpg", fb:"⚡" },
+  { name:"Sun Records 78rpm — That's All Right", type:"vinyl", cat:"rare", era:"1954", rarity:"Grail", price:"$5000+",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/400px-24_Portrait_of_Elvis_Presley.jpg", fb:"🎵" },
+  { name:"Elvis Bobblehead — Funko Gold Series", type:"figure", cat:"misc", era:"General", rarity:"Common", price:"$15–$40",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/400px-24_Portrait_of_Elvis_Presley.jpg", fb:"🪆" },
+  { name:"Elvis Lunchbox — Vintage 1978", type:"tin", cat:"misc", era:"1978", rarity:"Uncommon", price:"$40–$100",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Elvis_Presley_promoting_Jailhouse_Rock.jpg/400px-Elvis_Presley_promoting_Jailhouse_Rock.jpg", fb:"🧰" },
+  { name:"Graceland Souvenir Plate — Porcelain", type:"plate", cat:"misc", era:"General", rarity:"Common", price:"$20–$50",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/400px-24_Portrait_of_Elvis_Presley.jpg", fb:"🍽️" },
+  { name:"Elvis Playing Card Set — Commemorative", type:"cards", cat:"misc", era:"General", rarity:"Common", price:"$10–$30",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Elvis_Presley_promoting_Jailhouse_Rock.jpg/400px-Elvis_Presley_promoting_Jailhouse_Rock.jpg", fb:"🃏" },
+  { name:"Elvis Aloha Jumpsuit Snow Globe", type:"globe", cat:"misc", era:"1973", rarity:"Uncommon", price:"$25–$70",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elvis_aloha.jpg/400px-Elvis_aloha.jpg", fb:"🔮" },
 ];
 
-let owned = JSON.parse(localStorage.getItem("owned") || "[]");
-let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-let hidden = JSON.parse(localStorage.getItem("hidden") || "[]");
+const RO = { Grail:0, Rare:1, Limited:2, Uncommon:3, Common:4 };
+const CAT = {
+  all:      { icon:"🎤", title:"All Collectibles" },
+  figure:   { icon:"🎸", title:"Figures" },
+  comeback: { icon:"📺", title:"Comeback Special" },
+  rare:     { icon:"💎", title:"Rare & Grail" },
+  misc:     { icon:"📦", title:"Misc Memorabilia" },
+  owned:    { icon:"📦", title:"My Collection" },
+  wishlist: { icon:"⭐", title:"Wishlist" },
+  hidden:   { icon:"🚫", title:"Hidden Items" },
+};
 
-let filter="all";
+let owned   = JSON.parse(localStorage.getItem("elv-owned")   || "[]");
+let wishlist= JSON.parse(localStorage.getItem("elv-wish")    || "[]");
+let hidden  = JSON.parse(localStorage.getItem("elv-hidden")  || "[]");
+let tab = "all";
+let order = ITEMS.map((_,i) => i);
 
-function render(){
-let grid=document.getElementById("grid");
-grid.innerHTML="";
-
-let filtered=items.filter(i=>{
-if(filter==="owned") return owned.includes(i.name);
-if(filter==="wishlist") return wishlist.includes(i.name);
-return !owned.includes(i.name)&&!hidden.includes(i.name);
-});
-
-filtered.forEach(i=>{
-let card=document.createElement("div");
-card.className="card";
-
-card.innerHTML=`
-<img src="${i.img}">
-<div class="card-content">
-<h3>${i.name}</h3>
-<p>${i.type} • ${i.era}</p>
-<p>💰 ${i.price}</p>
-<div class="actions">
-<button onclick="own('${i.name}')">Own</button>
-<button onclick="wish('${i.name}')">Wishlist</button>
-<button onclick="hide('${i.name}')">Hide</button>
-</div>
-</div>
-`;
-
-grid.appendChild(card);
-});
-
-document.getElementById("available").innerText=filtered.length;
-document.getElementById("ownedCount").innerText=owned.length;
-document.getElementById("wishlistCount").innerText=wishlist.length;
-document.getElementById("hiddenCount").innerText=hidden.length;
+function toast(m) {
+  const el = document.getElementById("toast");
+  el.textContent = m;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-function setFilter(f){filter=f;render();}
-function own(n){if(!owned.includes(n)) owned.push(n);save();}
-function wish(n){if(!wishlist.includes(n)) wishlist.push(n);save();}
-function hide(n){if(!hidden.includes(n)) hidden.push(n);save();}
-
-function shuffle(){items.sort(()=>Math.random()-0.5);render();}
-function sortAZ(){items.sort((a,b)=>a.name.localeCompare(b.name));render();}
-
-function save(){
-localStorage.setItem("owned",JSON.stringify(owned));
-localStorage.setItem("wishlist",JSON.stringify(wishlist));
-localStorage.setItem("hidden",JSON.stringify(hidden));
-render();
+function saveLS() {
+  localStorage.setItem("elv-owned",  JSON.stringify(owned));
+  localStorage.setItem("elv-wish",   JSON.stringify(wishlist));
+  localStorage.setItem("elv-hidden", JSON.stringify(hidden));
 }
+
+function addOwned(n) {
+  if (!owned.includes(n)) owned.push(n);
+  wishlist = wishlist.filter(x => x !== n);
+  saveLS(); toast("Added to your collection, Sir."); render();
+}
+function addWish(n) {
+  if (!wishlist.includes(n) && !owned.includes(n)) wishlist.push(n);
+  saveLS(); toast("Added to wishlist."); render();
+}
+function hideItem(n) {
+  if (!hidden.includes(n)) hidden.push(n);
+  wishlist = wishlist.filter(x => x !== n);
+  saveLS(); toast("Item hidden, Sir."); render();
+}
+function unhide(n) {
+  hidden = hidden.filter(x => x !== n);
+  saveLS(); toast("Item restored."); render();
+}
+function remOwned(n) { owned = owned.filter(x => x !== n); saveLS(); toast("Removed from collection."); render(); }
+function remWish(n)  { wishlist = wishlist.filter(x => x !== n); saveLS(); toast("Removed from wishlist."); render(); }
+
+function setTab(el, t) {
+  tab = t;
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  render();
+}
+
+function doShuffle() {
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  toast("Shuffled, Sir!"); render();
+}
+
+function doSort(k) {
+  order = [...ITEMS.keys()].sort((a,b) => {
+    if (k === "name")   return ITEMS[a].name.localeCompare(ITEMS[b].name);
+    if (k === "rarity") return (RO[ITEMS[a].rarity]||5) - (RO[ITEMS[b].rarity]||5);
+    if (k === "era")    return ITEMS[a].era.localeCompare(ITEMS[b].era);
+    return 0;
+  });
+  toast(`Sorted by ${k}, Sir.`); render();
+}
+
+function getItems() {
+  if (tab === "owned")    return owned.map(n => ITEMS.find(i => i.name === n)).filter(Boolean);
+  if (tab === "wishlist") return wishlist.map(n => ITEMS.find(i => i.name === n)).filter(Boolean);
+  if (tab === "hidden")   return hidden.map(n => ITEMS.find(i => i.name === n)).filter(Boolean);
+  return order.map(i => ITEMS[i]).filter(item =>
+    !owned.includes(item.name) && !hidden.includes(item.name) &&
+    (tab === "all" || item.cat === tab)
+  );
+}
+
+function rBadge(r) {
+  const m = { Grail:"b-grail", Rare:"b-rare", Limited:"b-limited", Uncommon:"b-uncommon", Common:"b-common" };
+  return `<span class="badge ${m[r]||"b-common"}">${r}</span>`;
+}
+
+function cardHTML(item) {
+  const isO = owned.includes(item.name);
+  const isW = wishlist.includes(item.name);
+  const isH = hidden.includes(item.name);
+  const n = item.name.replace(/'/g, "\\'");
+
+  const imgEl = `<img src="${item.img}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block;"
+    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    <span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:52px;">${item.fb}</span>`;
+
+  let acts = "";
+  if (isH) {
+    acts = `<button class="abtn" onclick="unhide('${n}')">Restore</button>`;
+  } else if (isO) {
+    acts = `<button class="abtn a-rem" onclick="remOwned('${n}')">Remove</button>`;
+  } else {
+    const wb = isW
+      ? `<button class="abtn a-rem" onclick="remWish('${n}')">Unwish</button>`
+      : `<button class="abtn a-wish" onclick="addWish('${n}')">+ Wishlist</button>`;
+    acts = `<button class="abtn a-own" onclick="addOwned('${n}')">I own this</button>${wb}<button class="abtn a-hide" onclick="hideItem('${n}')">Hide</button>`;
+  }
+
+  const xb = [
+    isW && !isO ? '<span class="badge b-wish">Wishlisted</span>' : "",
+    isO ? '<span class="badge b-owned">Owned</span>' : "",
+  ].filter(Boolean).join("");
+
+  return `<div class="card">
+    <div class="card-img-wrap">${imgEl}</div>
+    <div class="card-body">
+      <div class="card-name">${item.name}</div>
+      <div class="card-meta">${item.type} &middot; ${item.era} &middot; ${item.price}</div>
+      <div class="badges">${rBadge(item.rarity)}${xb}</div>
+      <div class="acts">${acts}</div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
+  const info = CAT[tab] || CAT.all;
+  document.getElementById("sec-icon").textContent  = info.icon;
+  document.getElementById("sec-title").textContent = info.title;
+  const items = getItems();
+  document.getElementById("sec-count").textContent = items.length ? `${items.length} item${items.length !== 1 ? "s" : ""}` : "";
+  document.getElementById("s-avail").textContent  = ITEMS.filter(i => !owned.includes(i.name) && !hidden.includes(i.name)).length;
+  document.getElementById("s-owned").textContent  = owned.length;
+  document.getElementById("s-wish").textContent   = wishlist.length;
+  document.getElementById("s-hidden").textContent = hidden.length;
+  if (!items.length) { grid.innerHTML = ""; empty.style.display = "block"; }
+  else { empty.style.display = "none"; grid.innerHTML = items.map(cardHTML).join(""); }
+}
+
+function makeCode() { return btoa(JSON.stringify({ owned, wishlist, hidden, v:2 })); }
+function applyCode(c) {
+  try {
+    const d = JSON.parse(atob(c.trim()));
+    if (d.v === 1 || d.v === 2) { owned = d.owned||[]; wishlist = d.wishlist||[]; hidden = d.hidden||[]; return true; }
+  } catch(e) {}
+  return false;
+}
+
+function openSave() { closePanels(); document.getElementById("save-box").value = makeCode(); document.getElementById("save-panel").classList.add("open"); document.getElementById("save-box").select(); }
+function openLoad() { closePanels(); document.getElementById("load-panel").classList.add("open"); }
+function closePanels() { document.getElementById("save-panel").classList.remove("open"); document.getElementById("load-panel").classList.remove("open"); }
+function doCopy() { const b = document.getElementById("save-box"); b.select(); try { document.execCommand("copy"); toast("Copied to clipboard, Sir!"); } catch(e) { toast("Select and copy the code above."); } }
+function doLoad() { if (applyCode(document.getElementById("load-box").value)) { toast("Collection loaded, Sir!"); saveLS(); closePanels(); render(); } else { toast("That code doesn't look right, Sir."); } }
 
 render();
 </script>
-
 </body>
 </html>
