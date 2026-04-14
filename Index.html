@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<!-- iPhone App Mode -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Elvis Browser">
+
+<link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/8/8e/Elvis_Presley_1968.jpg">
+
+<title>Elvis Collection Browser</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Arial;
+  background: #f2f2f7;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(to bottom, #000, #1c1c1e);
+  color: white;
+  padding: 25px 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* STATS */
+.stats {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+}
+
+.stat {
+  flex: 1;
+  background: white;
+  border-radius: 15px;
+  padding: 12px;
+  text-align: center;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.tabs button {
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+}
+
+.active { background: black; color: white; }
+
+/* CONTROLS */
+.controls {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+/* CARDS */
+.grid { padding: 15px; }
+
+.card {
+  background: white;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-content { padding: 10px; }
+
+.actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.actions button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>THE KING OF ROCK N ROLL</div>
+  <h1>Elvis Collection Browser</h1>
+</div>
+
+<div class="stats">
+  <div class="stat"><span id="available"></span><br>Available</div>
+  <div class="stat"><span id="ownedCount"></span><br>Owned</div>
+  <div class="stat"><span id="wishlistCount"></span><br>Wishlist</div>
+  <div class="stat"><span id="hiddenCount"></span><br>Hidden</div>
+</div>
+
+<div class="tabs">
+  <button onclick="setFilter('all')">All</button>
+  <button onclick="setFilter('figure')">Figures</button>
+  <button onclick="setFilter('owned')">Owned</button>
+  <button onclick="setFilter('wishlist')">Wishlist</button>
+</div>
+
+<div class="controls">
+  <button onclick="shuffle()">🔀 Shuffle</button>
+  <button onclick="sortAZ()">A–Z</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+let items = [
+{
+name:"Elvis Las Vegas Figure",
+type:"figure",
+era:"1970",
+price:"$35–$90",
+img:"https://upload.wikimedia.org/wikipedia/commons/0/0c/Elvis_Presley_1970.jpg"
+},
+{
+name:"Elvis Jailhouse Rock Figure",
+type:"figure",
+era:"1957",
+price:"$60–$150",
+img:"https://upload.wikimedia.org/wikipedia/commons/1/1c/Elvis_Presley_Jailhouse_Rock.jpg"
+},
+{
+name:"Elvis Comeback Special Figure",
+type:"figure",
+era:"1968",
+price:"$40–$120",
+img:"https://upload.wikimedia.org/wikipedia/commons/8/8e/Elvis_Presley_1968.jpg"
+}
+];
+
+let owned = JSON.parse(localStorage.getItem("owned") || "[]");
+let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+let hidden = JSON.parse(localStorage.getItem("hidden") || "[]");
+
+let filter="all";
+
+function render(){
+let grid=document.getElementById("grid");
+grid.innerHTML="";
+
+let filtered=items.filter(i=>{
+if(filter==="owned") return owned.includes(i.name);
+if(filter==="wishlist") return wishlist.includes(i.name);
+return !owned.includes(i.name)&&!hidden.includes(i.name);
+});
+
+filtered.forEach(i=>{
+let card=document.createElement("div");
+card.className="card";
+
+card.innerHTML=`
+<img src="${i.img}">
+<div class="card-content">
+<h3>${i.name}</h3>
+<p>${i.type} • ${i.era}</p>
+<p>💰 ${i.price}</p>
+<div class="actions">
+<button onclick="own('${i.name}')">Own</button>
+<button onclick="wish('${i.name}')">Wishlist</button>
+<button onclick="hide('${i.name}')">Hide</button>
+</div>
+</div>
+`;
+
+grid.appendChild(card);
+});
+
+document.getElementById("available").innerText=filtered.length;
+document.getElementById("ownedCount").innerText=owned.length;
+document.getElementById("wishlistCount").innerText=wishlist.length;
+document.getElementById("hiddenCount").innerText=hidden.length;
+}
+
+function setFilter(f){filter=f;render();}
+function own(n){if(!owned.includes(n)) owned.push(n);save();}
+function wish(n){if(!wishlist.includes(n)) wishlist.push(n);save();}
+function hide(n){if(!hidden.includes(n)) hidden.push(n);save();}
+
+function shuffle(){items.sort(()=>Math.random()-0.5);render();}
+function sortAZ(){items.sort((a,b)=>a.name.localeCompare(b.name));render();}
+
+function save(){
+localStorage.setItem("owned",JSON.stringify(owned));
+localStorage.setItem("wishlist",JSON.stringify(wishlist));
+localStorage.setItem("hidden",JSON.stringify(hidden));
+render();
+}
+
+render();
+</script>
+
+</body>
+</html>
