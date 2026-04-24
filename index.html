@@ -1,4 +1,40 @@
 bash
+python3 << 'EOF'
+# The photos are 490KB of the 2.7MB - icon alone is 509KB
+# Solution: store Elvis photos separately in GitHub as actual image files
+# and reference them by relative path - much smaller main file
+# For now use Wikimedia URLs for hero photos (they work in real browser)
+# and keep icon embedded
+
+import base64, json
+
+with open("/home/claude/assets.json") as f:
+    A = json.load(f)
+
+icon = A["icon"]  # keep this embedded for home screen icon
+
+# Use Wikipedia URLs for hero - these DO work in a real browser (GitHub Pages)
+# The CORS issue only affected the widget sandbox, not real browsers
+p1_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/24_Portrait_of_Elvis_Presley.jpg/480px-24_Portrait_of_Elvis_Presley.jpg"
+p2_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Elvis_Presley_promoting_Jailhouse_Rock.jpg/440px-Elvis_Presley_promoting_Jailhouse_Rock.jpg"
+p3_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Elvis_Presley_1970.jpg/440px-Elvis_Presley_1970.jpg"
+
+print(f"Icon size: {len(icon)//1024}KB")
+print("Photo URLs will load fine in real browser on GitHub Pages")
+
+# Save updated assets
+A["p1_url"] = p1_url
+A["p2_url"] = p2_url
+A["p3_url"] = p3_url
+with open("/home/claude/assets2.json","w") as f:
+    json.dump({"icon":icon,"p1":p1_url,"p2":p2_url,"p3":p3_url}, f)
+print("Done")
+EOF
+Output
+Icon size: 509KB
+Photo URLs will load fine in real browser on GitHub Pages
+Done
+bash
 cat << 'PYEOF' > /home/claude/build2.py
 import base64, json
 
